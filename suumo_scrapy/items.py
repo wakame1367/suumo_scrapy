@@ -5,8 +5,8 @@
 import re
 
 import scrapy
+from itemloaders.processors import MapCompose, TakeFirst
 from scrapy.loader import ItemLoader
-from scrapy.loader.processors import MapCompose, TakeFirst
 from w3lib.html import remove_tags
 
 
