@@ -5,8 +5,13 @@
 import re
 
 import scrapy
-from scrapy.loader.processors import MapCompose
+from scrapy.loader import ItemLoader
+from scrapy.loader.processors import MapCompose, TakeFirst
 from w3lib.html import remove_tags
+
+
+class ArticleItemLoader(ItemLoader):
+    default_output_processor = TakeFirst()
 
 
 def _remove_whitespace(value):
@@ -36,6 +41,25 @@ def _transfer_year(value):
         return 2018 - int(value[1:-1])
 
 
+def _transfer_area(value):
+    return float(value[0:-2])
+
+
+def _stations_formatter(value):
+    res = []
+    stations = value.split()
+    for station in stations:
+        data = station.split('/')
+        dis = re.search('(\d+)分', data[1].split('駅')[1])
+        res.append({
+            'line': data[0],
+            'station': data[1].split('駅')[0],
+            'distance': int(dis.group()[0:-1])
+        })
+
+    return res
+
+
 class SuumoScrapyItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
@@ -44,7 +68,7 @@ class SuumoScrapyItem(scrapy.Item):
         input_processor=MapCompose(remove_tags, _remove_whitespace)
     )
     price = scrapy.Field(
-        input_processor=MapCompose(remove_tags, _remove_whitespace)
+        input_processor=MapCompose(remove_tags, _remove_whitespace, _to_int)
     )
     url = scrapy.Field()
     url_object_id = scrapy.Field()
@@ -53,17 +77,18 @@ class SuumoScrapyItem(scrapy.Item):
         input_processor=MapCompose(remove_tags, _remove_whitespace)
     )
     stations = scrapy.Field(
-        input_processor=MapCompose(remove_tags, _remove_tab, _remove_space, _whitespace_to_space)
+        input_processor=MapCompose(remove_tags, _remove_tab, _remove_space, _whitespace_to_space,
+                                   _stations_formatter)
     )
     size = scrapy.Field(
         input_processor=MapCompose(remove_tags, _remove_whitespace)
     )
     area = scrapy.Field(
-        input_processor=MapCompose(remove_tags, _remove_whitespace)
+        input_processor=MapCompose(remove_tags, _remove_whitespace, _transfer_area)
     )
 
     build_year = scrapy.Field(
-        input_processor=MapCompose(remove_tags, _remove_whitespace)
+        input_processor=MapCompose(remove_tags, _remove_whitespace, _transfer_year)
     )
     floor = scrapy.Field(
         input_processor=MapCompose(remove_tags)
