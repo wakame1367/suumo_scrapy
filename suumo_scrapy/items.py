@@ -30,85 +30,69 @@ def _whitespace_to_space(value):
     return re.sub('\s+', ' ', value)
 
 
-def _to_int(value):
-    return int(float(value[0:-2]) * 10)
-
-
-def _transfer_year(value):
-    if value == '新築':
-        return 2018
-    else:
-        return 2018 - int(value[1:-1])
-
-
 def _transfer_area(value):
     return float(value[0:-2])
 
 
 def _stations_formatter(value):
-    res = []
-    stations = value.split()
-    for station in stations:
-        data = station.split('/')
-        dis = re.search('(\d+)分', data[1].split('駅')[1])
-        res.append({
-            'line': data[0],
-            'station': data[1].split('駅')[0],
-            'distance': int(dis.group()[0:-1])
-        })
-
-    return res
+    sep = '\r\n'
+    return value.lstrip(sep).rstrip(sep)
 
 
 class SuumoScrapyItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
     # define the fields for your item here like:
-    name = scrapy.Field(
-        input_processor=MapCompose(remove_tags, _remove_whitespace)
+
+    field_and_default_processor = scrapy.Field(
+        input_processor=MapCompose(remove_tags, _remove_whitespace, _remove_space)
     )
-    price = scrapy.Field(
-        input_processor=MapCompose(remove_tags, _remove_whitespace, _to_int)
-    )
+    name = field_and_default_processor
+    price = field_and_default_processor
     url = scrapy.Field()
-    url_object_id = scrapy.Field()
-
-    address = scrapy.Field(
-        input_processor=MapCompose(remove_tags, _remove_whitespace)
-    )
+    address = field_and_default_processor
     stations = scrapy.Field(
-        input_processor=MapCompose(remove_tags, _remove_tab, _remove_space, _whitespace_to_space,
-                                   _stations_formatter)
+        input_processor=MapCompose(remove_tags, _remove_tab, _remove_space, _stations_formatter)
     )
-    size = scrapy.Field(
-        input_processor=MapCompose(remove_tags, _remove_whitespace)
-    )
-    area = scrapy.Field(
-        input_processor=MapCompose(remove_tags, _remove_whitespace, _transfer_area)
-    )
-
-    build_year = scrapy.Field(
-        input_processor=MapCompose(remove_tags, _remove_whitespace, _transfer_year)
-    )
-    floor = scrapy.Field(
-        input_processor=MapCompose(remove_tags)
-    )
-    direction = scrapy.Field(
-        input_processor=MapCompose(remove_tags, _remove_whitespace)
-    )
-    building_type = scrapy.Field(
-        input_processor=MapCompose(remove_tags, _remove_whitespace)
-    )
+    common_charges = field_and_default_processor
+    size = field_and_default_processor
+    area = field_and_default_processor
+    build_year = field_and_default_processor
+    floor = field_and_default_processor
+    direction = field_and_default_processor
+    building_type = field_and_default_processor
     # 敷金/礼金
-    deposit_and_gratuity_fee = scrapy.Field(
-        input_processor=MapCompose(remove_tags, _remove_whitespace)
-    )
+    deposit_and_gratuity_fee = field_and_default_processor
     # 保証金
-    security_deposit = scrapy.Field(
-        input_processor=MapCompose(remove_tags, _remove_whitespace)
-    )
+    security_deposit = field_and_default_processor
     # 敷引・償却
-    expense_deposits = scrapy.Field(
-        input_processor=MapCompose(remove_tags, _remove_whitespace)
-    )
+    expense_deposits = field_and_default_processor
+    # 部屋の特徴・設備
+    others = field_and_default_processor
+    # 仲介手数料
+    brokerage_fee = field_and_default_processor
+    # 損保
+    damage_insurance = field_and_default_processor
+    # 入居可能か
+    is_move_in = field_and_default_processor
+    # 間取り詳細
+    floor_plan_details = field_and_default_processor
+    # 条件
+    requirement = field_and_default_processor
+    # SUUMO物件コード
+    suumo_code = field_and_default_processor
+    # ほか諸費用
+    other_expenses = field_and_default_processor
+    # 備考
+    note = field_and_default_processor
+    # 構造
+    structure = field_and_default_processor
+    # 駐車場
+    parking_lot = field_and_default_processor
+    # 取引態様
+    business_transactions = field_and_default_processor
+    # 取り扱い店舗物件コード
+    stores_code = field_and_default_processor
+    # 総戸数
+    total_number_of_houses = field_and_default_processor
     crawl_time = scrapy.Field()
