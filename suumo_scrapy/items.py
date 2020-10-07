@@ -93,5 +93,22 @@ class SuumoScrapyItem(scrapy.Item):
     floor = scrapy.Field(
         input_processor=MapCompose(remove_tags)
     )
-
+    direction = scrapy.Field(
+        input_processor=MapCompose(remove_tags, _remove_whitespace)
+    )
+    building_type = scrapy.Field(
+        input_processor=MapCompose(remove_tags, _remove_whitespace)
+    )
+    # 敷金/礼金
+    deposit_and_gratuity_fee = scrapy.Field(
+        input_processor=MapCompose(remove_tags, _remove_whitespace)
+    )
+    # 保証金
+    security_deposit = scrapy.Field(
+        input_processor=MapCompose(remove_tags, _remove_whitespace)
+    )
+    # 敷引・償却
+    expense_deposits = scrapy.Field(
+        input_processor=MapCompose(remove_tags, _remove_whitespace)
+    )
     crawl_time = scrapy.Field()
